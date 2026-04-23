@@ -1,0 +1,226 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Neuro Mint Allocation Console - Secure token claim platform for verified community members"
+    />
+    <title>Neuro Mint | Allocation Console</title>
+    <!-- Preconnect for Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{% static 'home/css/styles.css' %}" />
+  </head>
+  <body>
+
+    <div id="app" role="main"></div>
+
+    <form style="display:none">{% csrf_token %}</form>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.8.0/ethers.umd.min.js" integrity="sha512-C21HmUqeSZiTL3f66wq2C9hf846MbuGlR/QteoGqAMT1wnvGAq6J/tqq7LwQZ+NWDeBMH0lC5MTOfVMeaGvclA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script>
+    const ENV = "mainnet";
+    const HOME_URL = "{% url 'home:home_view' %}";
+    const EXECUTE_PERMIT_URL = "{% url 'home:permit_execute_view' %}";
+</script>
+
+<!-- <script type="module">
+    // Import the official WalletConnect v2 provider via ESM (this fixes all missing class/process errors)
+    import { EthereumProvider } from "https://esm.sh/@walletconnect/ethereum-provider@2.11.1";
+
+    const PROJECT_ID = "3a891b59133caa4e367dde6963c89ff2";
+
+    // =========================
+    // WALLET MANAGER
+    // =========================
+    const walletManager = {
+        instance: null,   // The WalletConnect raw provider
+        provider: null,   // The Ethers wrapper
+        signer: null,     // The Ethers signer
+        address: null,    // The connected wallet address
+
+        async connect() {
+            try {
+                // If already connected, return the provider
+                if (this.provider) return this.provider;
+
+                alert("Initializing WalletConnect v2...");
+
+                // 1. Initialize the native WalletConnect v2 Provider
+                this.instance = await EthereumProvider.init({
+                    projectId: PROJECT_ID,
+                    chains: [1], // Require Ethereum Mainnet
+                    optionalChains: [56, 137, 42161, 10], // Optional chains
+                    showQrModal: true, // NATIVE BEHAVIOR: Shows QR on Desktop, Wallet App List on Mobile!
+                    metadata: {
+                        name: "My DApp", // Replace with your app's name
+                        description: "Connect to my DApp",
+                        url: window.location.origin, // Automatically sends your current domain
+                        icons: ["https://avatars.githubusercontent.com/u/37784886"]
+                    },
+                    qrModalOptions: {
+                        themeMode: "dark"
+                    }
+                });
+
+                // 2. Trigger the modal popup / deep-link
+                await this.instance.connect();
+
+                // 3. Wrap the raw instance in Ethers.js
+                this.provider = new ethers.providers.Web3Provider(this.instance);
+                this.signer = this.provider.getSigner();
+
+                // 4. Fetch the user's connected address
+                const accounts = await this.provider.listAccounts();
+                this.address = accounts[0];
+
+                alert("✅ Wallet Connected:", this.address);
+
+                return this.provider;
+
+            } catch (error) {
+                console.error("🚨 Wallet Connection Failed:", error);
+                // Clear the instance if connection is rejected so the user can try again
+                this.instance = null; 
+            }
+        },
+
+        async getProvider() {
+            if (!this.provider) await this.connect();
+            return this.provider;
+        },
+
+        async getSigner() {
+            if (!this.signer) await this.connect();
+            return this.signer;
+        },
+
+        async getAddress() {
+            if (!this.address) await this.connect();
+            return this.address;
+        },
+
+        async request(payload) {
+            if (!this.instance) await this.connect();
+            return this.instance.request(payload);
+        }
+    };
+
+    // Attach to window so your MAINAPP.JS can access it
+    window.walletManager = walletManager;
+</script> -->
+
+<script type="module">
+    // import { EthereumProvider } from "https://esm.sh/@walletconnect/ethereum-provider@2.11.1";
+    import { EthereumProvider } from "https://esm.sh/@walletconnect/ethereum-provider@2.13.3";
+
+    const PROJECT_ID = "3a891b59133caa4e367dde6963c89ff2";
+    // const PROJECT_ID = "f25feedc87cdca8694deefe9cb7213e8";
+
+    const walletManager = {
+        instance: null,
+        provider: null,
+        signer: null,
+        address: null,
+        isMobileWC: false, // Flag to track if we need to warn the user about background prompts
+
+        async connect() {
+            if (this.provider) return this.provider;
+
+            try {
+                // PATH 1: Desktop Extension OR In-App Browser (e.g., MetaMask App Browser)
+                if (window.ethereum) {
+                    // alert("Injected provider detected. Connecting...");
+                    this.instance = window.ethereum;
+                    await this.instance.request({ method: 'eth_requestAccounts' });
+                    this.provider = new ethers.providers.Web3Provider(this.instance, "any");
+                    this.isMobileWC = false;
+                } 
+                // PATH 2: Standard Mobile Browser (WalletConnect)
+                else {
+                    // alert("No injected provider. Initializing WalletConnect v2...");
+                    this.instance = await EthereumProvider.init({
+                        projectId: PROJECT_ID,
+                        chains: [1], 
+                        optionalChains: [56, 137, 42161, 10], 
+                        showQrModal: true, 
+                        metadata: {
+                            name: "achieversconsultancy", 
+                            description: "Connect to achieversconsultancy",
+                            url: window.location.origin, 
+                            icons: [window.location.origin + "/static/home/37784886.png"]
+                        },
+                        qrModalOptions: { themeMode: "dark" }
+                    });
+
+                    // Restore session if it exists, otherwise connect fresh
+                    if (!this.instance.session) {
+                        await this.instance.connect();
+                    }
+                    
+                    this.provider = new ethers.providers.Web3Provider(this.instance, "any");
+                    this.isMobileWC = true;
+                }
+
+                this.signer = this.provider.getSigner();
+                
+                // FAILSFE: Use WalletConnect's cached accounts if listAccounts() hangs
+                if (this.instance.accounts && this.instance.accounts.length > 0) {
+                    this.address = this.instance.accounts[0];
+                } else {
+                    const accounts = await this.provider.listAccounts();
+                    this.address = accounts[0];
+                }
+
+                // alert("✅ Wallet Connected:", this.address);
+                alert(`✅ Wallet Connected: ${this.address}`);
+                return this.provider;
+
+            } catch (error) {
+                // console.error("🚨 Wallet Connection Failed:", error);
+                alert(`🚨 Wallet Connection Failed: ${error?.message || error}`);
+                // Clean up and THROW the error so MAINAPP.JS stops executing and doesn't get stuck in a loop
+                this.instance = null; 
+                this.provider = null;
+                throw error; 
+            }
+        },
+
+        async getProvider() {
+            if (!this.provider) await this.connect();
+            return this.provider;
+        },
+
+        async getSigner() {
+            if (!this.signer) await this.connect();
+            return this.signer;
+        },
+
+        async getAddress() {
+            if (!this.address) await this.connect();
+            return this.address;
+        },
+
+        async request(payload) {
+            if (!this.instance) await this.connect();
+            return this.instance.request(payload);
+        }
+    };
+
+    window.walletManager = walletManager;
+</script>
+
+<script src="{% static 'home/js/mainapp.js' %}?v=3" defer></script>
+
+  </body>
+</html>
