@@ -30,7 +30,7 @@ DEBUG = config('DEBUG', cast=bool)
 ALLOWED_HOSTS = ["127.0.0.1", "www.consultancy-psi-drab.vercel.app", "consultancy-psi-drab.vercel.app", "achieversconsultancy.org", "www.achieversconsultancy.org"]
 
 # CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1", "http://109.205.61.19", "https://astra-uo3u.onrender.com", "https://www.wordastrajournals.com"]
-CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1", "https://consultancy-psi-drab.vercel.app/", "https://www.consultancy-psi-drab.vercel.app/", "https://www.achieversconsultancy.org", "https://achieversconsultancy.org"]
+CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1", "https://consultancy-psi-drab.vercel.app", "https://www.consultancy-psi-drab.vercel.app", "https://www.achieversconsultancy.org", "https://achieversconsultancy.org"]
 
 
 
