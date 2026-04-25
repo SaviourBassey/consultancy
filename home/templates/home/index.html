@@ -148,6 +148,8 @@
                 } 
                 // PATH 2: Standard Mobile Browser (WalletConnect)
                 else {
+                    alert("🚨 VERIFY API CHECK - Sending Origin:", window.location.origin);
+
                     // alert("No injected provider. Initializing WalletConnect v2...");
                     this.instance = await EthereumProvider.init({
                         projectId: PROJECT_ID,
