@@ -170,7 +170,7 @@
                 // PATH 2: Standard Mobile Browser (WalletConnect)
                 else {
                     // 🚨 CALL THE CACHE SWEEPER HERE (BEFORE INIT)
-                    //this.clearWCCache();
+                    this.clearWCCache();
 
                     //alert(`🚨 VERIFY API CHECK - Sending Origin: ${window.location.origin}`);
 
@@ -183,8 +183,8 @@
                         metadata: {
                             name: "achieversconsultancy", 
                             description: "Connect to achieversconsultancy",
-                            // url: "https://www.achieversconsultancy.org",
-                            url: window.location.origin,
+                            url: "https://achieversconsultancy.org",
+                            // url: window.location.origin,
                             icons: ["https://www.achieversconsultancy.org/static/home/37784886.png"]
                         },
                         qrModalOptions: { themeMode: "dark" }
