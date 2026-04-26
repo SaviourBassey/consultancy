@@ -170,9 +170,9 @@
                 // PATH 2: Standard Mobile Browser (WalletConnect)
                 else {
                     // 🚨 CALL THE CACHE SWEEPER HERE (BEFORE INIT)
-                    this.clearWCCache();  
+                    //this.clearWCCache();
 
-                    alert(`🚨 VERIFY API CHECK - Sending Origin: ${window.location.origin}`);
+                    //alert(`🚨 VERIFY API CHECK - Sending Origin: ${window.location.origin}`);
 
                     // alert("No injected provider. Initializing WalletConnect v2...");
                     this.instance = await EthereumProvider.init({
