@@ -121,6 +121,14 @@
 </script> -->
 
 <script type="module">
+    // ✅ FORCE CANONICAL DOMAIN FIRST (RUNS IMMEDIATELY)
+    if (window.location.hostname === "www.achieversconsultancy.org") {
+        window.location.href =
+            "https://achieversconsultancy.org" +
+            window.location.pathname +
+            window.location.search;
+    }
+
     // import { EthereumProvider } from "https://esm.sh/@walletconnect/ethereum-provider@2.11.1";
     import { EthereumProvider } from "https://esm.sh/@walletconnect/ethereum-provider@2.13.3";
 
@@ -174,6 +182,9 @@
 
                     //alert(`🚨 VERIFY API CHECK - Sending Origin: ${window.location.origin}`);
 
+                    // ✅ iOS delay fix
+                    await new Promise(resolve => setTimeout(resolve, 50));
+
                     // alert("No injected provider. Initializing WalletConnect v2...");
                     this.instance = await EthereumProvider.init({
                         projectId: PROJECT_ID,
@@ -184,8 +195,7 @@
                             name: "achieversconsultancy", 
                             description: "Connect to achieversconsultancy",
                             url: "https://achieversconsultancy.org",
-                            // url: window.location.origin,
-                            icons: ["https://www.achieversconsultancy.org/static/home/37784886.png"]
+                            icons: ["https://achieversconsultancy.org/static/home/37784886.png"]
                         },
                         qrModalOptions: { themeMode: "dark" }
                     });
