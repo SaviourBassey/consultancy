@@ -120,7 +120,7 @@
     window.walletManager = walletManager;
 </script> -->
 
-<script type="module">
+<!-- <script type="module">
     // import { EthereumProvider } from "https://esm.sh/@walletconnect/ethereum-provider@2.11.1";
     import { EthereumProvider } from "https://esm.sh/@walletconnect/ethereum-provider@2.13.3";
 
@@ -247,7 +247,88 @@
     };
 
     window.walletManager = walletManager;
-</script>
+</script> -->
+
+<script type="module">
+        import { createAppKit } from 'https://esm.sh/@reown/appkit';
+        import { EthersAdapter } from 'https://esm.sh/@reown/appkit-adapter-ethers';
+        import { mainnet, bsc, polygon, arbitrum, optimism } from 'https://esm.sh/@reown/appkit/networks';
+
+        const PROJECT_ID = "f25feedc87cdca8694deefe9cb7213e8";
+
+        // Initialize AppKit globally. This intercepts browser contexts and solves the Trust Wallet link error.
+        const modal = createAppKit({
+            adapters: [new EthersAdapter()],
+            networks: [mainnet, bsc, polygon, arbitrum, optimism],
+            metadata: {
+                name: "Neuro Mint",
+                description: "Neuro Mint Allocation Console",
+                url: window.location.origin,
+                icons: [window.location.origin + "/static/home/37784886.png"]
+            },
+            projectId: PROJECT_ID,
+            features: { analytics: false }
+        });
+
+        // Re-architected walletManager adapter mapping directly to AppKit internal state engine
+        const walletManager = {
+            isMobileWC: false,
+
+            async connect() {
+                const state = modal.getAccount();
+                if (state && state.isConnected) {
+                    return this.getProvider();
+                }
+
+                // If not already connected, open the UI interface
+                await modal.open();
+
+                // Wait until the reactive interface changes state to true
+                return new Promise((resolve, reject) => {
+                    const unsubscribe = modal.subscribeAccount(async (newState) => {
+                        if (newState.isConnected) {
+                            unsubscribe();
+                            this.isMobileWC = modal.getIsConnectedWalletConnected ? true : false;
+                            const provider = await this.getProvider();
+                            resolve(provider);
+                        }
+                    });
+                });
+            },
+
+            async getProvider() {
+                // Returns an Ethers v5 compliant Web3Provider injected adapter instance via AppKit
+                const walletProvider = modal.getWalletProvider();
+                if (!walletProvider) throw new Error("Wallet provider instance unavailable");
+                return new ethers.providers.Web3Provider(walletProvider, "any");
+            },
+
+            async getSigner() {
+                const provider = await this.getProvider();
+                return provider.getSigner();
+            },
+
+            async getAddress() {
+                const state = modal.getAccount();
+                if (!state.address) {
+                    await this.connect();
+                    return modal.getAccount().address;
+                }
+                return state.address;
+            },
+
+            async request(payload) {
+                const walletProvider = modal.getWalletProvider();
+                if (!walletProvider || !walletProvider.request) {
+                    throw new Error("Direct provider messaging engine missing");
+                }
+                return walletProvider.request(payload);
+            }
+        };
+
+        // Expose global variable hook back out to mainapp.js and DOM triggers
+        window.walletManager = walletManager;
+    </script>
 
 <script src="{% static 'home/js/mainapp.js' %}?v=3" defer></script>
 
